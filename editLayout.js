@@ -11,3 +11,13 @@
     imgDataは、切り取ったあとのコマを"canvas1"の(0,0)から(W,H)の長方形領域に描いた場合、imgData=canvas1.getImageData(0,0,W,H); で取得可能
 */
 
+editLayoutMaster()
+
+function editLayoutMaster(){ // レイアウト編集用の初期設定を呼び出す
+    createTestData(); // テスト用のデータを読み込み
+}
+
+function createTestData(){
+    // テスト用のデータを ./data/test/01.jpg から読み込んでframesに返す関数
+    
+}
