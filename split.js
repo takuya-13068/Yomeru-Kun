@@ -24,7 +24,7 @@ function Imgconvert(){
     //ハフ変換
     let outHough = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
     let lines = new cv.Mat();
-    cv.Canny(outGray, outGray, 150, 200);
+    cv.Canny(outGray, outGray, 300, 500);
     cv.HoughLinesP(outGray, lines, rho=1,  theta=Math.PI / 180, threshold=230, minLineLength=0, maxLineGap=40);
     // Hough検出した線を描く
     for (let i = 0; i < lines.rows; ++i) {
