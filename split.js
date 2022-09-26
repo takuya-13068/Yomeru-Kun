@@ -1,4 +1,3 @@
-//const cv = require("./opencv");
 let inputImg;
 let selectedFile;
 
@@ -19,17 +18,23 @@ window.onload = function(){
 
 function Imgconvert(){
     let src = cv.imread(inputImg);
+    //グレースケール変換
     let outGray = new cv.Mat();
     cv.cvtColor(src, outGray, cv.COLOR_RGBA2GRAY, 0);
+    //ハフ変換
     let outHough = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
     let lines = new cv.Mat();
     cv.Canny(outGray, outGray, 150, 200);
-    cv.HoughLinesP(outGray, lines, Math.PI / 180, 2, 0, 0);
+    cv.HoughLinesP(outGray, lines, rho=1,  theta=Math.PI / 180, threshold=230, minLineLength=0, maxLineGap=40);
     // Hough検出した線を描く
     for (let i = 0; i < lines.rows; ++i) {
         let startPoint = new cv.Point(lines.data32S[i * 4], lines.data32S[i * 4 + 1]);
         let endPoint = new cv.Point(lines.data32S[i * 4 + 2], lines.data32S[i * 4 + 3]);
-        cv.line(outHough, startPoint, endPoint, new cv.Scalar(255, 255, 255));
+        if(Math.abs(startPoint.x - endPoint.x) + Math.abs(startPoint.y - endPoint.y) > 0){
+            console.log(startPoint.x, endPoint.x);
+            cv.line(outHough, startPoint, endPoint, new cv.Scalar(255, 255, 255));
+        }
+        
     }    
     
     cv.imshow("myCanvas", outHough);
