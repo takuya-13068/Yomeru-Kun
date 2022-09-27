@@ -23,14 +23,15 @@
         <button id="button" type="button" onclick="Imgconvert()">画像を変換</button>
     </div>
     <div class="caption">1. オリジナル画像</div>
+    <div><img id="inputImg" src="" /> </div>
 
-    <div>
-        <img id="inputImg" src="" />
-    </div>
+    <div class="caption">2. Blur変換</div>
+    <canvas id="canvas1" height="0"></canvas>
 
-    <div id="canvas-wrapper">  
+    <div id="canvas-wrapper">
         <canvas class="hidden" id="viewCanvas" width="960" height="540"></canvas>
         <canvas id="myCanvas" width="960" height="540"></canvas>
+        <canvas id="checkWall"></canvas>
     </div>
     <div id="frameWrapper"></div> <!-- ここの子要素に一コマずつのcanvas要素が入る -->    
 </body>
