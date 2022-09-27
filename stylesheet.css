@@ -1,7 +1,34 @@
 body{
     margin:0;
     padding:0;
+    background-color: rgba(50,50,50,1);
+    font-family:sans-serif;
 }
 .hidden{
     display: none;
+}
+.frames{
+    display: block;
+    margin:20px auto 20px auto;
+    left:0;
+    right:0;
+}
+.header{
+    background-image: url("./img/header.jpg");
+    background-size:cover;
+    height:60px;
+    width:100%;
+    font-family: "Nico Moji";
+    position:relative;
+}
+.headerTitle{
+    font-size:40px;
+    padding:10px 30px;
+    position:absolute;
+}
+.headerExp{
+    font-size:18px;
+    position:absolute;
+    left:340px;
+    bottom:10px;
 }

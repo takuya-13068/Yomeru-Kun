@@ -94,7 +94,6 @@ async function uploadImage(){
     inputImg.src = URL.createObjectURL(selectedFile.files[0]);
 }
 
-
 function blankJudge(){ //左右のどっちが領域空白かチェックする
     //
 }
@@ -102,3 +101,4 @@ function blankJudge(){ //左右のどっちが領域空白かチェックする
 function closedArea(start, end){
 
 }
+
