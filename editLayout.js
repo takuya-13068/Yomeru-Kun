@@ -20,13 +20,37 @@ function editLayoutMaster(){ // レイアウト編集用の処理を一通り行
     createTestData(); // テスト用のデータを読み込み　画像読み込みは非同期のため要注意
     deleteFrames();
     const sleep1 = new Promise(resolve=>setTimeout(resolve,1000)); //テスト用のデータが非同期処理のため追加
-    sleep1.then(()=>createFrames());
+    sleep1.then(()=>{sortFrames(); createFrames();});
+}
+function sortFrames(){ // framesに格納されているコマを読む順番に並び替える関数
+    var meanOfAspectRatio=[];
+    var pageCount=[];
+    var maxPage=0; // 一番下のページ番号＋１
+    for(var i = 0;i < frames.length;i++) {if(maxPage<frames[i].page+1) {maxPage=frames[i].page+1}};
+    for(var i = 0;i < maxPage;i++) {meanOfAspectRatio[i]=0; pageCount[i]=0;}
+    for(var i = 0;i < frames.length;i++) {
+        meanOfAspectRatio[frames[i].page]+=(frames[i].imgData.width/frames[i].imgData.height); 
+        pageCount[frames[i].page]++};
+    for(var i = 0;i < maxPage;i++) meanOfAspectRatio[i]/=pageCount[i];
+    console.log(meanOfAspectRatio,maxPage,pageCount);
+    frames.sort((a,b)=>{ // それぞれのコマの中心を、ページ内のアスペクト比の平均に相当する角度で見ていく
+        var centerPosA_X=a.pos.x+a.imgData.width/2;  //　中心の座標
+        var centerPosA_Y=a.pos.y+a.imgData.height/2; 
+        var centerPosB_X=b.pos.x+b.imgData.width/2; 
+        var centerPosB_Y=b.pos.y+b.imgData.height/2; 
+        var scoreA = -centerPosA_X+centerPosA_Y*meanOfAspectRatio[a.page];
+        var scoreB = -centerPosB_X+centerPosB_Y*meanOfAspectRatio[b.page];
+        scoreA=Math.atan(scoreA)+(Math.PI/2*a.page); // コマの位置によるスコアを-pi/2〜pi/2の範囲に収め、
+        scoreB=Math.atan(scoreB)+(Math.PI/2*b.page); // ページ数によるスコアをpi/2単位で追加
+        return (scoreA-scoreB);
+    })
 }
 
 function deleteFrames(){
     // もともとあるフレームを削除する
     document.getElementById("frameWrapper").innerHTML="";
 }
+
 function createFrames(){
     // 読み込んだデータの数分のcanvasを用意して順番に書き込み、縦に表示する
     var newElement;
@@ -41,12 +65,13 @@ function createFrames(){
     }
 }
 
-function pushTestFrames(){ //テストデータのフレームデータをプッシュする関数
+function pushTestFrames(){ // テストデータのフレームデータをプッシュする関数
     var testFrames=[{l:378,t:0,r:1022,b:446},
                     {l:94,t:0,r:375,b:449},
                     {l:94,t:451,r:1022,b:985},
                     {l:659,t:989,r:931,b:1365},
                     {l:91,t:989,r:652,b:1434}]
+    frames=[];
     for(var i =0;i < testFrames.length;i++){
         frames.push({
             page:0, pos:{x:testFrames[i].l, y:testFrames[i].t},
