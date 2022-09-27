@@ -17,8 +17,28 @@ var frames=[];
 document.addEventListener("DOMContentLoaded", function(){setupEditLayout()});//ロードイベント登録
 
 function editLayoutMaster(){ // レイアウト編集用の処理を一通り行う
-    createTestData(); // テスト用のデータを読み込み
-    // ここに、読み込んだデータの数分のcanvasを用意してそこに順番に書き込み、縦に表示する処理を追加
+    createTestData(); // テスト用のデータを読み込み　画像読み込みは非同期のため要注意
+    deleteFrames();
+    const sleep1 = new Promise(resolve=>setTimeout(resolve,1000)); //テスト用のデータが非同期処理のため追加
+    sleep1.then(()=>createFrames());
+}
+
+function deleteFrames(){
+    // もともとあるフレームを削除する
+    document.getElementById("frameWrapper").innerHTML="";
+}
+function createFrames(){
+    // 読み込んだデータの数分のcanvasを用意して順番に書き込み、縦に表示する
+    var newElement;
+    for(var i = 0;i < frames.length;i++){
+        newElement = document.createElement("canvas"); // canvas要素を作成
+        document.getElementById("frameWrapper").appendChild(newElement);
+        newElement.setAttribute("id","frame" + i); // p要素にidを設定   
+        newElement.setAttribute("class","frames"); // p要素にidを設定   
+        newElement.setAttribute("width",frames[i].imgData.width); 
+        newElement.setAttribute("height",frames[i].imgData.height); 
+        newElement.getContext("2d").putImageData(frames[i].imgData,0,0); 
+    }
 }
 
 function pushTestFrames(){ //テストデータのフレームデータをプッシュする関数
