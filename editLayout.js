@@ -32,7 +32,6 @@ function sortFrames(){ // framesに格納されているコマを読む順番に
         meanOfAspectRatio[frames[i].page]+=(frames[i].imgData.width/frames[i].imgData.height); 
         pageCount[frames[i].page]++};
     for(var i = 0;i < maxPage;i++) meanOfAspectRatio[i]/=pageCount[i];
-    console.log(meanOfAspectRatio,maxPage,pageCount);
     frames.sort((a,b)=>{ // それぞれのコマの中心を、ページ内のアスペクト比の平均に相当する角度で見ていく
         var centerPosA_X=a.pos.x+a.imgData.width/2;  //　中心の座標
         var centerPosA_Y=a.pos.y+a.imgData.height/2; 
