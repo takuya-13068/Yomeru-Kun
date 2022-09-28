@@ -3,6 +3,8 @@ let selectedFile;
 let width;
 let height;
 var Dots;
+var lineNum =0;
+
 
 //windowのloadが終わったタイミングで作動
 window.onload = function(){
@@ -32,7 +34,7 @@ function Imgconvert(){
     let NotWallR = false;
     width = inGray.size().width;
     height = inGray.size().height;
-
+    console.log(width,height);
     cv.imshow("checkWall", inGray);
     var wallCanvas = document.getElementById("checkWall").getContext("2d");
     var leftCol = wallCanvas.getImageData(5,0,1,height).data; //(x,y,width, height)の作業範囲のRGBAが含まれている
@@ -79,6 +81,11 @@ function Imgconvert(){
         Lines.push([0,0,width,0], [0,height,width,height], [width,0,width,height]);} //左側空白のため左縦以外の直線を導入(上4つ, 下4つ, 右4つ)
     //////////////////////////////////////
 
+    console.log(Lines);
+    console.log(Lines.length);
+    lineNum = 0;
+    Lines = lineReduction(Lines);
+    console.log(Lines);
     /*
     必要な直線のみに絞る工程
     1. 交点を求め、閉領域の可能性がある区域を4点情報で保存する
@@ -101,23 +108,28 @@ function Imgconvert(){
                         dot2.x = intSec2[0]; dot2.y = intSec2[1];
                         dot3.x = intSec3[0]; dot3.y = intSec3[1];
                         dot4.x = intSec4[0]; dot4.y = intSec4[1];
+                        dot1.x = Math.round(dot1.x); dot1.y = Math.round(dot1.y); 
+                        dot2.x = Math.round(dot2.x); dot2.y = Math.round(dot2.y);
+                        dot3.x = Math.round(dot3.x); dot3.y = Math.round(dot3.y); 
+                        dot4.x = Math.round(dot4.x); dot4.y = Math.round(dot4.y);                        
 
                         //一定の面積以上あるか検出する
                         var areaDimension = calcArea(dot1, dot2, dot3, dot4);
                         if(areaDimension > 300000) {
-                            // 左上の座標dotを検出してdot1に配置する
-                            var xMax = Math.max(dot1.x, dot2.x, dot3.x, dot4.x);
-                            var yMax = Math.max(dot1.y, dot2.y, dot3.y, dot4.y);
-                            if(dot1.x == xMax && dot1.y == yMax) {}
-                            else if(dot2.x == xMax && dot2.y == yMax) [dot1, dot2, dot3, dot4] = [dot4, dot1, dot2, dot3];
-                            else if(dot3.x == xMax && dot3.y == yMax) [dot1, dot2, dot3, dot4] = [dot3, dot4, dot1, dot2];
-                            else if(dot4.x == xMax && dot4.y == yMax) [dot1, dot2, dot3, dot4] = [dot2, dot3, dot4, dot1];
-                            else console.error("ERROR! 適切なコマ認識が行われていません。");
+                            var checkArr = [dot1.x,dot1.y, dot2.x, dot2.y, dot3.x, dot3.y, dot4.x, dot4.y];
+                            for (let i=0; i<4; i++) {
+                                if(!(checkArr[i*2] >= 0 && checkArr[i*2] <= width && checkArr[i*2+1] >= 0 && checkArr[i*2+1] <= height)) {
+                                    console.error("ERROR! dotの座標が画像範囲外になっています。  No." + i*2 + ", 数値: " + checkArr[i*2]+ ", "  + checkArr[i*2+1]);
+                                    console.log(Dots);
+                                    break;
+                                }
+                            }
+                            var position = dotPosition(dot1, dot2, dot3, dot4);
+                            dot1 = position[0]; dot2 = position[1], dot3 = position[2], dot4 = position[3];
 
                             inputData(dot1, dot2, dot3, dot4);
                             LineDots.push([dot1, dot2, dot3, dot4]);
-                            console.log(areaDimension);
-                            console.log("made frame");
+                            //console.log("made frame(areaDimension: " + areaDimension + ")");
                         }
                     }
                 }
@@ -244,22 +256,91 @@ function judgeAdj(dotA, dotB, dotC, dotD){//2直線の4点が交点を持つ可�
     if(dotA.x == dotB.x && dotC.x == dotD.x) return false; //両方y軸に並行の場合
     else {
         var inter = intersection(dotA, dotB, dotC, dotD);
-        let allowError = 7;
-        //var m = intersection({x:0, y:1}, {x:5, y:6}, {x:1, y:2}, {x:3, y:-2});
-        if( ( Math.min(dotA.x, dotB.x) - allowError < inter[0] && Math.max(dotA.x, dotB.x)+allowError > inter[0] ) && ( Math.min(dotA.y, dotB.y) -allowError < inter[1] && Math.max(dotA.y, dotB.y)+allowError > inter[1] ) ){ 
-            if( ( Math.min(dotC.x, dotD.x) -allowError < inter[0] && Math.max(dotC.x, dotD.x)+allowError > inter[0] ) && ( Math.min(dotC.y, dotD.y) -allowError < inter[1] && Math.max(dotC.y, dotD.y)+allowError > inter[1] ) ){ 
-                return true
+        let allowError = 20;
+        //console.log(inter);
+        if( calcDistance(dotA.x, dotA.y, inter[0], inter[1]) < allowError || calcDistance(dotB.x, dotB.y, inter[0], inter[1]) < allowError || onStraight(dotA.x, dotA.y, dotB.x, dotB.y, inter[0], inter[1])){ 
+            if( calcDistance(dotC.x, dotC.y, inter[0], inter[1]) < allowError || calcDistance(dotD.x, dotD.y, inter[0], inter[1]) < allowError || onStraight(dotC.x, dotC.y, dotD.x, dotD.y, inter[0], inter[1])){ 
+                if(inter[0] >=0 && inter[0] <= width && inter[1] >= 0 && inter[1] <= height) return true
+                else return false
             } else return false
         } else return false
     }
 }
 
+function calcDistance(x1, y1, x2, y2){
+    return Math.sqrt( Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2) )
+}
+
+function onStraight(x1,y1,x2,y2,xinter,yinter){// 直線上に存在するか
+    if(x1==x2) {
+        if(x1 == xinter) return true
+        else return false
+    } else {
+        var a = (y2-y1) / (x2-x1);
+        var b = y1 - a*x1;
+        if(a*xinter+b == yinter) return true
+        else return false
+    }
+}
+
 function inputData(dot1, dot2, dot3, dot4){
+    //データエラーチェック
+    
+    if(Math.max(dot2.x,dot3.x) - dot1.x > width) console.error("ERROR! frames' width is too large: "+ Math.max(dot2.x,dot3.x) - dot1.x);
+    else if(Math.max(dot3.y, dot4.y) - dot1.y > height) console.error("ERROR! frames'height is too large: "+ Math.max(dot3.y, dot4.y) - dot1.y);
     //canvasに描画して画素データをframesに入れる
-    ctxFrame = document.getElementById("frameData").getContext("2d");
-    ctxFrame.width = width;
-    ctxFrame.height = height;
-    ctxFrame.drawImage(inputImg,0,0);
-    var frameImgData = ctxFrame.getImageData(dot1.x, dot2.y, Math.max(dot2.x,dot3.x) - dot1.x, Math.max(dot3.y, dot4.y) - dot1.y);
-    frames.push({page:0, pos:{x:dot1.x, y: dot1.y}, frameImgData});
+    else {
+        ctxFrame = document.getElementById("frameData").getContext("2d");
+        ctxFrame.width = width;
+        ctxFrame.height = height;
+        ctxFrame.drawImage(inputImg,0,0);
+        //console.log(dot1, dot2, dot3, dot4);
+        var frameImgData = ctxFrame.getImageData(dot1.x, dot2.y, Math.max(dot2.x,dot3.x) - dot1.x, Math.max(dot3.y, dot4.y) - dot1.y);
+        frames.push({page:0, pos:{x:dot1.x, y: dot1.y}, frameImgData});
+    }
+}
+
+function dotPosition(dot1, dot2, dot3, dot4){
+    /* 
+    それぞれのpositionを調整
+    左上の頂点を始点に時計回りで
+    */
+    var arr = [dot1.y + dot1.x, dot2.y + dot2.x, dot3.y + dot3.x, dot4.y + dot4.x];
+    var topLeft = arr.indexOf(Math.min(...arr));
+    if(topLeft == 0) {}//元から左上にある
+    else if(topLeft == 1) [dot1, dot2] = [dot2, dot1]; //dot2が左上にあるから交換
+    else if(topLeft == 2) [dot1, dot3] = [dot3, dot1]; //dot3が左上にあるから交換
+    else if(topLeft == 3) [dot1, dot4] = [dot4, dot1]; //dot4が左上にあるから交換
+    else console.error("ERROR! topLeftが定まっていません。");
+
+    var arr = [dot1.y + dot1.x, dot2.y + dot2.x, dot3.y + dot3.x, dot4.y + dot4.x];
+    var bottomRight = arr.indexOf(Math.max(...arr));
+    if(bottomRight == 2) {}//元から右下にある
+    else if(bottomRight == 0) [dot1, dot3] = [dot3, dot1]; //dot1が右下にあるから交換
+    else if(bottomRight == 1) [dot2, dot3] = [dot3, dot2]; //dot2が右下にあるから交換
+    else if(bottomRight == 3) [dot3, dot4] = [dot4, dot3]; //dot4が右下にあるから交換
+    else console.error("ERROR! bottomRightが定まっていません。");
+    //この状態でdot2, dot4が残っているから識別, x座標で明らかにdot4.x< dot2.x
+    if(dot4.x > dot2.x) [dot4, dot2] = [dot2,dot4];
+    else if(dot4.x == dot2.x) console.error("ERROR! 頂点調整が完了できません。");
+
+    return [dot1, dot2, dot3, dot4]
+}
+function lineReduction(Lines){ // 
+    if(Lines[lineNum][0]==Lines[lineNum][2]){
+        for(let i=lineNum+1; i<Lines.length; i++){
+            if( Lines[i][0]==Lines[i][2] && Math.abs( Lines[lineNum][0]-Lines[i][0] ) < 8 ) {
+                //左右8px以内に他の直線が存在していればそいつを削除
+                Lines.splice(i, 1);
+                lineNum--;
+                console.log(Lines.length);
+                break;
+            } 
+        } 
+        lineNum++;
+    } else { lineNum++; }
+    if(lineNum >= Lines.length) return Lines
+    else {
+        return lineReduction(Lines);
+    }
 }
