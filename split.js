@@ -81,11 +81,9 @@ function Imgconvert(){
         Lines.push([0,0,width,0], [0,height,width,height], [width,0,width,height]);} //左側空白のため左縦以外の直線を導入(上4つ, 下4つ, 右4つ)
     //////////////////////////////////////
 
-    console.log(Lines);
-    console.log(Lines.length);
     lineNum = 0;
     Lines = lineReduction(Lines);
-    console.log(Lines);
+    console.log(Lines.length);
     /*
     必要な直線のみに絞る工程
     1. 交点を求め、閉領域の可能性がある区域を4点情報で保存する
@@ -136,7 +134,6 @@ function Imgconvert(){
             }
         }
     }
-    console.log(frames);
 
     //      描画処理        ////////////////////
     var ctxConvert = document.getElementById("converted").getContext("2d");
@@ -154,7 +151,24 @@ function Imgconvert(){
         ctxConvert.stroke();
     }
     ////////////////////////////////////////
-    
+
+    //      全体を囲うコマを削除する        /////////////////
+    var framenum = frames.length;
+    for(let i=0; i< frames.length; i++){
+        if( width - Math.min( Math.abs(LineDots[i][1].x - LineDots[i][0].x),  Math.abs(LineDots[i][3].x - LineDots[i][2].x)) < 110 ){
+            if( height - Math.min( Math.abs(LineDots[i][0].y - LineDots[i][3].y),  Math.abs(LineDots[i][1].y - LineDots[i][2].y)) < 5 ){
+                if(framenum >= 1) {
+                    console.log("hit");
+                    frames.splice(i,1);
+                    LineDots.splice(i,1);
+                }
+            }
+        }
+    }
+    console.log(frames);
+    console.log(LineDots);
+    /////////////////////////////////////////////////////
+
     //      削除処理        /////////////
     src.delete();
     inGray.delete();
@@ -256,7 +270,7 @@ function judgeAdj(dotA, dotB, dotC, dotD){//2直線の4点が交点を持つ可�
     if(dotA.x == dotB.x && dotC.x == dotD.x) return false; //両方y軸に並行の場合
     else {
         var inter = intersection(dotA, dotB, dotC, dotD);
-        let allowError = 20;
+        let allowError = 5;
         //console.log(inter);
         if( calcDistance(dotA.x, dotA.y, inter[0], inter[1]) < allowError || calcDistance(dotB.x, dotB.y, inter[0], inter[1]) < allowError || onStraight(dotA.x, dotA.y, dotB.x, dotB.y, inter[0], inter[1])){ 
             if( calcDistance(dotC.x, dotC.y, inter[0], inter[1]) < allowError || calcDistance(dotD.x, dotD.y, inter[0], inter[1]) < allowError || onStraight(dotC.x, dotC.y, dotD.x, dotD.y, inter[0], inter[1])){ 
@@ -273,12 +287,12 @@ function calcDistance(x1, y1, x2, y2){
 
 function onStraight(x1,y1,x2,y2,xinter,yinter){// 直線上に存在するか
     if(x1==x2) {
-        if(x1 == xinter) return true
+        if(x1 == xinter && Math.min(y1,y2) < yinter && Math.max(y1,y2) > yinter) return true
         else return false
     } else {
         var a = (y2-y1) / (x2-x1);
         var b = y1 - a*x1;
-        if(a*xinter+b == yinter) return true
+        if(Math.min(y1,y2) <= yinter && Math.max(y1,y2) >= yinter) return true
         else return false
     }
 }
@@ -364,8 +378,6 @@ function lineReduction(Lines){
         }
         lineNum++; 
     }
-
-
 
     if(lineNum >= Lines.length) return Lines
     else {
