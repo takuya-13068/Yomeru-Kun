@@ -326,19 +326,47 @@ function dotPosition(dot1, dot2, dot3, dot4){
 
     return [dot1, dot2, dot3, dot4]
 }
-function lineReduction(Lines){ // 
+function lineReduction(Lines){ 
+    // 縦の並行直線を削減する
     if(Lines[lineNum][0]==Lines[lineNum][2]){
         for(let i=lineNum+1; i<Lines.length; i++){
             if( Lines[i][0]==Lines[i][2] && Math.abs( Lines[lineNum][0]-Lines[i][0] ) < 8 ) {
                 //左右8px以内に他の直線が存在していればそいつを削除
                 Lines.splice(i, 1);
                 lineNum--;
-                console.log(Lines.length);
+                //console.log(Lines.length);
                 break;
             } 
         } 
         lineNum++;
-    } else { lineNum++; }
+    } 
+    // 横の並行直線を削減する
+    else if(Lines[lineNum][1]==Lines[lineNum][3]){
+        for(let i=lineNum+1; i<Lines.length; i++){
+            if( Lines[i][1]==Lines[i][3] && Math.abs( Lines[lineNum][1]-Lines[i][1] ) < 8 ) {
+                //上下8px以内に他の直線が存在していればそいつを削除
+                Lines.splice(i, 1);
+                lineNum--;
+                break;
+            } 
+        } 
+        lineNum++;
+    }
+    // 斜めの直線に対して並行な直線が近くにあればそれを削除する
+    else { 
+        for(let i=lineNum+1; i<Lines.length; i++){
+            if( (Lines[lineNum][3] - Lines[lineNum][1]) / (Lines[lineNum][2] - Lines[lineNum][0]) - (Lines[i][3] - Lines[i][1]) / (Lines[i][2] - Lines[i][0]) <= 0.1 && (Math.abs(Lines[lineNum][1] - Lines[i][1]) < 8 || Math.abs(Lines[lineNum][3] - Lines[i][3]) < 8)){
+                //同じくらいの直線
+                Lines.splice(i, 1);
+                lineNum--;
+                break;
+            }
+        }
+        lineNum++; 
+    }
+
+
+
     if(lineNum >= Lines.length) return Lines
     else {
         return lineReduction(Lines);
