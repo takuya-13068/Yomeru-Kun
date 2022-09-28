@@ -4,6 +4,7 @@ let width;
 let height;
 var Dots;
 var lineNum =0;
+var connNum = 0;
 
 
 //windowのloadが終わったタイミングで作動
@@ -152,7 +153,7 @@ function Imgconvert(){
     }
     ////////////////////////////////////////
 
-    //      全体を囲うコマを削除する        /////////////////
+    //      全体を囲うコマを削除する + 内包判定       /////////////////
     var framenum = frames.length;
     for(let i=0; i< frames.length; i++){
         if( width - Math.min( Math.abs(LineDots[i][1].x - LineDots[i][0].x),  Math.abs(LineDots[i][3].x - LineDots[i][2].x)) < 110 ){
@@ -165,6 +166,7 @@ function Imgconvert(){
             }
         }
     }
+    //judgeConnotation();
     console.log(frames);
     console.log(LineDots);
     /////////////////////////////////////////////////////
@@ -340,6 +342,8 @@ function dotPosition(dot1, dot2, dot3, dot4){
 
     return [dot1, dot2, dot3, dot4]
 }
+
+
 function lineReduction(Lines){ 
     // 縦の並行直線を削減する
     if(Lines[lineNum][0]==Lines[lineNum][2]){
@@ -382,5 +386,43 @@ function lineReduction(Lines){
     if(lineNum >= Lines.length) return Lines
     else {
         return lineReduction(Lines);
+    }
+}
+
+function judgeConnotation(){
+    connNum = 0;
+    //frameの4点を見て内包されていれば外側にあるものを削除する
+    for(let i=0; i<frames.length; i++){
+        for (let j=i+1; j< frames.length; j++){
+            var big, small;
+            //面積で小さい方をsmallにする
+            var dim1 = calcArea(LineDots[i][0], LineDots[i][1], LineDots[i][2], LineDots[i][3]);
+            var dim2 = calcArea(LineDots[j][0], LineDots[j][1], LineDots[j][2], LineDots[j][3]);
+            if(dim1 > dim2){
+                big = LineDots[i];
+                small = LineDots[j];
+            } else {
+                big = LineDots[j];
+                small = LineDots[i];
+            }
+
+            if(big[0].x <= small[0].x && big[0].y <= small[0].y){// dot1
+                if(big[1].x >= small[1].x && big[1].y <= small[1].y){
+                    if(big[2].x >= small[2].x && big[2].y >= small[2].y){
+                        if(big[3].x <= small[3].x && big[3].y >= small[3].y){
+                            //bigを消す
+                            if(dim1 > dim2){ // bigは i
+                                frames.splice(i,1);
+                                LineDots.splice(i,1);
+                            } else { // big は j
+                                frames.splice(j,1);
+                                LineDots.splice(j,1);
+                            }
+                            connNum++;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
