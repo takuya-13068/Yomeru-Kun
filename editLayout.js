@@ -17,6 +17,11 @@ var frames=[];
 document.addEventListener("DOMContentLoaded", function(){setupEditLayout()});//ロードイベント登録
 
 function editLayoutMaster(){ // レイアウト編集用の処理を一通り行う
+    sortFrames();
+    createFrames();
+}
+
+function editLayoutMasterTest(){ // レイアウト編集用の処理を一通り行う テストデータ用
     createTestData(); // テスト用のデータを読み込み　画像読み込みは非同期のため要注意
     deleteFrames();
     const sleep1 = new Promise(resolve=>setTimeout(resolve,1000)); //テスト用のデータが非同期処理のため追加

@@ -18,21 +18,21 @@
             よみこみ
             <input class="selectButton" type="file" id="selectedFile" name="file" onchange="">
         </label>
-        <button class="convertButton" id="button" type="button" onclick="editLayoutMaster()">へんかん</button>    
+        <button class="convertButton" id="button" type="button" onclick="editLayoutMasterTest()">へんかん</button>    
     </div>
-    <div class="hidden">
+    <div>
         <p class="hidden" id ="opencvStatus">openCV.js is loading ...</p>
         <div class="caption">1. オリジナル画像</div>
         <div><img id="inputImg" src="" /> </div>
-    
         <div class="caption">2. 変換後</div>
-        <canvas id="converted" width="960" height="2000"></canvas>
+        <canvas id="converted" width="960" height="800"></canvas>
         <canvas id="checkWall"></canvas>
-        <canvas id="frameData" width="960" height="2000"></canvas>
+        <canvas id="frameData" width="960" height="800"></canvas>
         <div id="canvas-wrapper">
             <canvas id="myCanvas" width="960" height="540"></canvas>
             <canvas class="hidden" id="viewCanvas" width="960" height="540"></canvas>
         </div>    
+    
     </div>
 
     <div id="frameWrapper"></div> <!-- ここの子要素に一コマずつのcanvas要素が入る -->    
