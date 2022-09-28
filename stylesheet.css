@@ -20,6 +20,7 @@ body{
     width:100%;
     font-family: "Nico Moji";
     position:relative;
+    box-shadow: 0 0px 12px 3px rgba(0,0,0,1);
 }
 .headerTitle{
     font-size:40px;

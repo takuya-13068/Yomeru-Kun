@@ -296,7 +296,7 @@ function inputData(dot1, dot2, dot3, dot4){
         ctxFrame.drawImage(inputImg,0,0);
         //console.log(dot1, dot2, dot3, dot4);
         var frameImgData = ctxFrame.getImageData(dot1.x, dot2.y, Math.max(dot2.x,dot3.x) - dot1.x, Math.max(dot3.y, dot4.y) - dot1.y);
-        frames.push({page:0, pos:{x:dot1.x, y: dot1.y}, frameImgData});
+        frames.push({page:0, pos:{x:dot1.x, y: dot1.y}, imgData:frameImgData});
     }
 }
 
