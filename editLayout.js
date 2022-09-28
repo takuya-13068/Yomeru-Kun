@@ -17,7 +17,7 @@ var frames=[];
 document.addEventListener("DOMContentLoaded", function(){setupEditLayout()});//ロードイベント登録
 
 function editLayoutMaster(){ // レイアウト編集用の処理を一通り行う
-    //createTestData(); // テスト用のデータを読み込み　画像読み込みは非同期のため要注意
+    createTestData(); // テスト用のデータを読み込み　画像読み込みは非同期のため要注意
     deleteFrames();
     const sleep1 = new Promise(resolve=>setTimeout(resolve,1000)); //テスト用のデータが非同期処理のため追加
     sleep1.then(()=>{sortFrames(); createFrames();});
@@ -96,6 +96,6 @@ function createTestData(){
 function setupEditLayout(){ //ロード時に呼び出される関数
     viewCanvas=document.getElementById("viewCanvas");
     testCtx=viewCanvas.getContext("2d");
-    editLayoutMaster()
+//    editLayoutMaster()
 }
 
